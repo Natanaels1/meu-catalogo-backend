@@ -2,9 +2,20 @@ const connection = require('../connection');
 
 module.exports = {
     login: (email, password) => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM admins WHERE email = ?', [email], (err, result) => {
+                
+                if(err) {
+                    reject(err);
+                    return;
+                }
 
+                resolve(result);
+
+            });
+        });
     },
-    cadastro: (name, email, password, nameEmpresa, CNPJ) => {
+    register: (name, email, password, nameEmpresa, CNPJ) => {
         return new Promise((resolve, reject) => {
 
             connection.query('INSERT INTO admins (name, email, password, nameEmpresa, CNPJ) VALUES (?, ?, ?, ?, ?)', 
@@ -28,5 +39,5 @@ module.exports = {
     },
     editarDadosAdmin: () => {
 
-    },
+    }
 };
