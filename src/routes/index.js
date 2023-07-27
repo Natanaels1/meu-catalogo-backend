@@ -1,5 +1,6 @@
 const produtosController = require('../controllers/ProdutosController');
 const AdminController = require('../controllers/AdminController');
+const checkToken = require('../middlewares/checkToken');
 
 function routes(app, options, done) {
 
@@ -10,9 +11,18 @@ function routes(app, options, done) {
 
     app.get('/produtos', produtosController.buscarTodos);
     app.get('/produto/:id', produtosController.buscarProduto);
-    app.post('/produto', produtosController.cadastraProduto);
-    app.put('/produto', produtosController.editaProduto);
-    app.delete('/produto/:id', produtosController.deletaProduto);
+    
+    app.post('/produto', {
+        preHandler: checkToken, 
+    },produtosController.cadastraProduto);
+
+    app.put('/produto', {
+        preHandler: checkToken, 
+    }, produtosController.editaProduto);  
+
+    app.delete('/produto/:id', {
+        preHandler: checkToken, 
+    },produtosController.deletaProduto);
 
     done();
 
