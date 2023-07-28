@@ -10,4 +10,4 @@ app.listen({
         process.exit(1);
     }
 
-})
+});

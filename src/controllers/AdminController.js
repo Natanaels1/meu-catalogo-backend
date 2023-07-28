@@ -7,70 +7,77 @@ const emailAdminExiste = require('../utils/emailAdminExiste');
 
 module.exports = {
     login: async (req, res) => {
-        
-        const dadosLogin = req.body;
-        
-        function validarFormulario(objeto) {
+        try {
 
-            const schema = Joi.object({
-                email: Joi.string().required(),
-                password: Joi.string().required(),
-            });
-
-            const { error } = schema.validate(objeto);
+            const dadosLogin = req.body;
+            
+            function validarFormulario(objeto) {
     
-            if (error) {
-                res.status(401);
-                res.send(error.details[0].message);
-                return false;
-            }
-
-            return true;
-        };
-
-        if(validarFormulario(dadosLogin)) {
-
-            const {
-                email,
-                password
-            } = dadosLogin;
-
-            const result = await AdminService.login(email, password);
-
-            if(result.length === 0) {
-                res.status(403);
-                res.send('Usuário não encontrado.');
-            }
-
-            const checkPassword = await bcrypt.compare(password, result[0].password);
-
-            if(!checkPassword) {
-                res.status(401).send('Senha inválida.');
-            };
-
-            try {
-
-                const secret = process.env.SECRET;
-
-                const token = jwt.sign(
-                    {
-                        id: result[0].id,
-                    },
-                    secret
-                )
-
-                res.send({
-                    message: 'Autenticado com sucesso.',
-                    nameAdmin: result[0].name,
-                    nameEmpresa: result[0].nameEmpresa,
-                    token: token
+                const schema = Joi.object({
+                    email: Joi.string().required(),
+                    password: Joi.string().required(),
                 });
-
-            } catch(erro) {
-                res.send('Ocorreu um erro no servidor, tente novamente mais tarde.');
+    
+                const { error } = schema.validate(objeto);
+        
+                if (error) {
+                    res.status(401);
+                    res.send(error.details[0].message);
+                    return false;
+                }
+    
+                return true;
+            };
+    
+            if(validarFormulario(dadosLogin)) {
+    
+                const {
+                    email,
+                    password
+                } = dadosLogin;
+    
+                const result = await AdminService.login(email, password);
+    
+                if(result.length === 0) {
+                    res.status(403).json({ retorno: 'Usuário não encontrado.'});
+                }
+    
+                const checkPassword = await bcrypt.compare(password, result[0].password);
+    
+                if(!checkPassword) {
+                    res.status(401).json({ retorno: 'Senha inválida.'});
+                };
+    
+                try {
+    
+                    const secret = process.env.SECRET;
+    
+                    const token = jwt.sign(
+                        {
+                            id: result[0].id,
+                        },
+                        secret
+                    )
+    
+                    res.status(200).json([
+                        {
+                            message: 'Autenticado com sucesso.',
+                            nameAdmin: result[0].name,
+                            nameEmpresa: result[0].nameEmpresa,
+                            token: token
+                        }                            
+                    ]);
+    
+                } catch(erro) {
+                    res.status(500).json({ retorno: 'Ocorreu um erro no servidor, tente novamente mais tarde.'});
+                }
+    
             }
 
+        } catch(erro) {
+            console.log(erro);
         }
+        
 
     },
     register: async (req, res) => {

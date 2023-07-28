@@ -1,11 +1,11 @@
-const Fastify = require('fastify');
-const routes = require('./routes');
+const express = require('express');
+const cors = require('cors');
+const router = require('./routes');
 
-const app = Fastify({ 
-    logger: false 
-});
+const app = express();
 
-app.register(routes);
-app.register(require('@fastify/multipart'))
+app.use(cors());
+app.use(express.json());
+app.use("/", router);
 
 module.exports = app;
