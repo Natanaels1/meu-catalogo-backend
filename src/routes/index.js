@@ -13,19 +13,19 @@ function routes(app, options, done) {
     app.get('/produto/:id', produtosController.buscarProduto);
     
     app.post('/produto', {
-        preHandler: checkToken, 
-    },produtosController.cadastraProduto);
+        preHandler: checkToken,
+    }, produtosController.cadastraProduto);
 
     app.put('/produto', {
-        preHandler: checkToken, 
+        preHandler: checkToken
     }, produtosController.editaProduto);  
 
     app.delete('/produto/:id', {
         preHandler: checkToken, 
-    },produtosController.deletaProduto);
+    }, produtosController.deletaProduto);
 
     done();
 
-}
+};
 
 module.exports = routes;

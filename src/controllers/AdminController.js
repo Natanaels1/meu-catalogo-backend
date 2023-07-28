@@ -134,6 +134,19 @@ module.exports = {
 
         }
 
+        /* 
+            Adicionar
+
+            function isValidEmail(email) {
+                // Regular expression to validate email format
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                // Test the email against the regular expression
+                return emailPattern.test(email);
+            }
+
+        */
+
     },
     dadosAdmin: async (req, res) => {
 

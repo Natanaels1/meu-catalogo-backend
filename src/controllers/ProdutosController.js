@@ -44,7 +44,7 @@ module.exports = {
                 prontaEntrega: Joi.boolean().required(),
                 produtosDisponiveis: Joi.number().integer().min(0).required(),
                 produtoDestaque: Joi.boolean().required(),
-                imgPrincipal: Joi.string().required(),
+                imgPrincipal: Joi.object().required(),
                 imgsProduto: Joi.array().items(Joi.string()),
                 idCategoria: Joi.number().required(),
             });

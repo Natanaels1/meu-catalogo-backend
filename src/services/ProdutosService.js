@@ -64,8 +64,6 @@ module.exports = {
                         return;
                     }
 
-                    console.log(result.insertId);
-
                     resolve({
                         message: 'Cadastro realizado com sucesso.',
                         idProdutoCadastrado: result.insertId
