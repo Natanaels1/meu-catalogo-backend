@@ -1,10 +1,10 @@
 const connection = require('../connection');
 
 module.exports = {
-    buscarTodos: () => {
+    buscarTodos: (idEmpresa) => {
 
         return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM produtos', (err, result) => {
+            connection.query('SELECT * FROM produtos WHERE produtos.idEmpresa = ?', [idEmpresa], (err, result) => {
                 
                 if(err) {
                     reject(err);

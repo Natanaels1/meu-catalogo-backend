@@ -5,9 +5,21 @@ module.exports = {
     buscarTodos: async (req, res) => {
 
         const json = {error: '', result: []};
-        const produtos = await ProdutosService.buscarTodos();
+        const { idEmpresa } = req.params;
+  
+        if(!idEmpresa) {
+            res.status(401).json({ erro: 'Informe o id da empresa' });
+            return;
+        }
+
+        const produtos = await ProdutosService.buscarTodos(idEmpresa);
 
         for(let i in produtos) {
+
+            produtos[i].prontaEntrega = produtos[i].prontaEntrega === 0 ? true : false;
+            produtos[i].produtoDestaque = produtos[i].produtoDestaque === 0 ? true : false;
+            produtos[i].produtoAtivo = produtos[i].produtoAtivo === 0 ? true : false;
+
             json.result.push(produtos[i]);
         }
 

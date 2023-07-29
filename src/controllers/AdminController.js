@@ -4,6 +4,7 @@ const Joi = require('joi');
 
 const AdminService = require('../services/AdminService');
 const emailAdminExiste = require('../utils/emailAdminExiste');
+const { json } = require('express');
 
 module.exports = {
     login: async (req, res) => {
@@ -62,8 +63,9 @@ module.exports = {
                     res.status(200).json([
                         {
                             message: 'Autenticado com sucesso.',
-                            nameAdmin: result[0].name,
-                            nameEmpresa: result[0].nameEmpresa,
+                            idAdmin: result[0].idAdmin,
+                            nmAdmin: result[0].nmAdmin,
+                            idEmpresa: result[0].idEmpresa,
                             token: token
                         }                            
                     ]);
@@ -77,8 +79,6 @@ module.exports = {
         } catch(erro) {
             console.log(erro);
         }
-        
-
     },
     register: async (req, res) => {
 
@@ -156,9 +156,52 @@ module.exports = {
 
     },
     dadosAdmin: async (req, res) => {
+        try {
 
+            const json = {error: '', result: {}};
+            const { idAdmin } = req.params;
+
+            if(!idAdmin) {
+                res.status(401).json({ erro: 'Informe o id do admin' });
+                return;
+            }
+
+            const admin = await AdminService.dadosAdmin(idAdmin);
+            
+            if(admin) {
+                json.result = admin;
+            }
+
+            res.json(json);
+
+        } catch(erro) {
+
+        }
     },
     editarDadosAdmin: async (req, res) => {
 
+    },
+    dadosEmpresa: async (req, res) => {
+        try {
+
+            const json = {error: '', result: {}};
+            const { idEmpresa } = req.params;
+
+            if(!idEmpresa) {
+                res.status(401).json({ erro: 'Informe o id da empresa' });
+                return;
+            }
+
+            const empresa = await AdminService.dadosEmpresa(idEmpresa);
+            
+            if(empresa) {
+                json.result = empresa;
+            }
+
+            res.json(json);
+
+        } catch(erro) {
+
+        }
     },
 };

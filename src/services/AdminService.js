@@ -34,10 +34,31 @@ module.exports = {
 
         });
     },
-    dadosAdmin: () => {
+    dadosAdmin: (idAdmin) => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM admins WHERE admins.idAdmin = ?', [idAdmin], (err, result) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
 
+                resolve(result);
+            });
+        });
     },
     editarDadosAdmin: () => {
 
-    }
+    },
+    dadosEmpresa: (idEmpresa) => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM empresas WHERE idEmpresa = ?', [idEmpresa], (err, result) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(result);
+            });
+        });
+    },
 };
