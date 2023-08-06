@@ -36,27 +36,30 @@ module.exports = {
 
     },
     cadastraProduto: (
+        idEmpresa,
         nmProduto, 
-        categoria, 
         vlProduto, 
         prontaEntrega, 
         descricao, 
         produtosDisponiveis, 
         produtoDestaque, 
-        idCategoria
+        idCategoria,
+        imgsProduto
     ) => {
         return new Promise((resolve, reject) => {
-            connection.query(`INSERT INTO produtos (nmProduto, categoria, vlProduto, prontaEntrega, descricao, produtosDisponiveis, produtoDestaque, idCategoria) VALUES 
-                (   
-                    '${nmProduto}', 
-                    '${categoria}', 
-                    ${vlProduto}, 
-                    ${prontaEntrega}, 
-                    '${descricao}', 
-                    ${produtosDisponiveis}, 
-                    ${produtoDestaque}, 
-                    ${idCategoria}
-                );`
+            connection.query(
+                'INSERT INTO produtos (nmProduto, vlProduto, prontaEntrega, descricao, produtosDisponiveis, produtoDestaque, idCategoria, idEmpresa, imgsProduto) VALUES (?,?,?,?,?,?,?,?,?)', 
+                [
+                    nmProduto,
+                    vlProduto, 
+                    prontaEntrega, 
+                    descricao, 
+                    produtosDisponiveis, 
+                    produtoDestaque, 
+                    idCategoria,
+                    idEmpresa,
+                    imgsProduto
+                ]
                 , (err, result) => {
                     
                     if(err) {

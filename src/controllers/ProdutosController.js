@@ -4,21 +4,22 @@ const Joi = require('joi');
 module.exports = {
     buscarTodos: async (req, res) => {
 
-        const json = {error: '', result: []};
+        const json = { error: '', result: [] };
         const { idEmpresa } = req.params;
-  
-        if(!idEmpresa) {
+
+        if (!idEmpresa) {
             res.status(401).json({ erro: 'Informe o id da empresa' });
             return;
         }
 
         const produtos = await ProdutosService.buscarTodos(idEmpresa);
 
-        for(let i in produtos) {
+        for (let i in produtos) {
 
             produtos[i].prontaEntrega = produtos[i].prontaEntrega === 0 ? true : false;
             produtos[i].produtoDestaque = produtos[i].produtoDestaque === 0 ? true : false;
             produtos[i].produtoAtivo = produtos[i].produtoAtivo === 0 ? true : false;
+            produtos[i].imgsProduto = JSON.parse(produtos[i].imgsProduto);
 
             json.result.push(produtos[i]);
         }
@@ -28,12 +29,12 @@ module.exports = {
     },
     buscarProduto: async (req, res) => {
 
-        const json = {error: '', result: {}};
+        const json = { error: '', result: {} };
         const { id } = req.params;
 
         const produto = await ProdutosService.buscarProduto(id);
 
-        if(produto) {
+        if (produto) {
             json.result = produto;
         }
 
@@ -41,90 +42,96 @@ module.exports = {
 
     },
     cadastraProduto: async (req, res) => {
+        try {
 
-        const json = {error: '', result: {}};
+            const json = { error: '', result: {} };
 
-        const produto = req.body;
+            const produto = JSON.parse(req.body.body);
+            const files = req.files;
 
-        function validarFormulario(objeto) {
-            
-            const schema = Joi.object({
-                nmProduto: Joi.string().required(),
-                categoria: Joi.string().required(),
-                vlProduto: Joi.number().positive().required(),
-                descricao: Joi.string().required(),
-                prontaEntrega: Joi.boolean().required(),
-                produtosDisponiveis: Joi.number().integer().min(0).required(),
-                produtoDestaque: Joi.boolean().required(),
-                imgPrincipal: Joi.object().required(),
-                imgsProduto: Joi.array().items(Joi.string()),
-                idCategoria: Joi.number().required(),
-            });
+            function validarFormulario(objeto) {
 
-            const { error } = schema.validate(objeto);
+                const schema = Joi.object({
+                    idEmpresa: Joi.number().required(),
+                    nmProduto: Joi.string().required(),
+                    vlProduto: Joi.number().positive().required(),
+                    descricao: Joi.string().required(),
+                    prontaEntrega: Joi.boolean().required(),
+                    produtosDisponiveis: Joi.number().integer().min(0).required(),
+                    produtoDestaque: Joi.boolean().required(),
+                    idCategoria: Joi.number().required(),
+                });
 
-            if (error) {
-                res.status(400);
-                res.send(error.details[0].message);
-                return false;
-            }
+                const { error } = schema.validate(objeto);
 
-            return true;
-        };
+                if (error) {
+                    res.status(400);
+                    res.send(error.details[0].message);
+                    return false;
+                }
 
-        if(validarFormulario(produto)) {
+                return true;
+            };
 
-            const {
-                nmProduto, 
-                categoria, 
-                vlProduto, 
-                prontaEntrega, 
-                descricao, 
-                produtosDisponiveis, 
-                produtoDestaque, 
-                idCategoria
-            } = produto;
+            if (validarFormulario(produto)) {
 
-            if(prontaEntrega === true) {
-                produto.prontaEntrega = 0;
+                const {
+                    idEmpresa,
+                    nmProduto,
+                    vlProduto,
+                    prontaEntrega,
+                    descricao,
+                    produtosDisponiveis,
+                    produtoDestaque,
+                    idCategoria
+                } = produto;
+
+                produto.prontaEntrega = prontaEntrega ? 0 : 1;
+                produto.produtoDestaque = produtoDestaque ? 0 : 1;
+                
+                const imgsProduto = [];
+
+                files.map( (img, index) => {
+                    imgsProduto.push({
+                        id: index,
+                        name: img.originalname,
+                        src: img.path, 
+                    });
+                });
+
+                const idProduto = await ProdutosService.cadastraProduto(
+                    idEmpresa,
+                    nmProduto,
+                    vlProduto,
+                    prontaEntrega,
+                    descricao,
+                    produtosDisponiveis,
+                    produtoDestaque,
+                    idCategoria,
+                    JSON.stringify(imgsProduto)
+                );
+                    
+                json.result = idProduto;
+
             } else {
-                produto.prontaEntrega = 1;
+                json.error = 'Algum dado invalido';
             }
 
-            if(produtoDestaque === true) {
-                produto.produtoDestaque = 0;
-            } else {
-                produto.produtoDestaque = 1;
-            }
+            res.send(json);
 
-            const idProduto = await ProdutosService.cadastraProduto(
-                nmProduto, 
-                categoria, 
-                vlProduto, 
-                prontaEntrega, 
-                descricao, 
-                produtosDisponiveis, 
-                produtoDestaque, 
-                idCategoria
-            );
-
-            json.result = idProduto;
-
-        } else {
-            json.error = 'Algum dado invalido';
+        } catch (erro) {
+            console.log(erro);
         }
-
-        res.send(json);
 
     },
     editaProduto: async (req, res) => {
 
-        const json = {error: '', result: {}};
+        const json = { error: '', result: {} };
 
         const produto = req.body;
 
         function validarFormulario(objeto) {
-            
+
             const schema = Joi.object({
                 idProdutoEditado: Joi.number().required(),
                 nmProduto: Joi.string().required(),
@@ -150,27 +157,27 @@ module.exports = {
             return true;
         };
 
-        if(validarFormulario(produto)) {
+        if (validarFormulario(produto)) {
 
             const {
                 idProdutoEditado,
-                nmProduto, 
-                categoria, 
-                vlProduto, 
-                prontaEntrega, 
-                descricao, 
-                produtosDisponiveis, 
-                produtoDestaque, 
+                nmProduto,
+                categoria,
+                vlProduto,
+                prontaEntrega,
+                descricao,
+                produtosDisponiveis,
+                produtoDestaque,
                 idCategoria
             } = produto;
 
-            if(prontaEntrega === true) {
+            if (prontaEntrega === true) {
                 produto.prontaEntrega = 0;
             } else {
                 produto.prontaEntrega = 1;
             }
 
-            if(produtoDestaque === true) {
+            if (produtoDestaque === true) {
                 produto.produtoDestaque = 0;
             } else {
                 produto.produtoDestaque = 1;
@@ -178,13 +185,13 @@ module.exports = {
 
             const response = await ProdutosService.editaProduto(
                 idProdutoEditado,
-                nmProduto, 
-                categoria, 
-                vlProduto, 
-                prontaEntrega, 
-                descricao, 
-                produtosDisponiveis, 
-                produtoDestaque, 
+                nmProduto,
+                categoria,
+                vlProduto,
+                prontaEntrega,
+                descricao,
+                produtosDisponiveis,
+                produtoDestaque,
                 idCategoria
             );
 
@@ -198,15 +205,15 @@ module.exports = {
 
     },
     deletaProduto: async (req, res) => {
-        const json = {error: '', result: {}};
+        const json = { error: '', result: {} };
         const { id } = req.params;
 
         const produto = await ProdutosService.deletaProduto(id);
 
-        if(produto) {
+        if (produto) {
             json.result = produto;
         }
 
         res.send(json);
-    }
+    },
 }
