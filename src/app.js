@@ -10,5 +10,6 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 app.use("/", router);
+app.use("/uploads", express.static('uploads'));
 
 module.exports = app;

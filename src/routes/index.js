@@ -22,6 +22,6 @@ router.route('/categorias/:idEmpresa').get(checkToken, EmpresaController.buscarC
 
 router.route('/produto').post(checkToken, upload.array("files"),produtosController.cadastraProduto);
 router.route('/produto').put(checkToken ,produtosController.editaProduto);
-router.route('/produto').delete(checkToken ,produtosController.deletaProduto);
+router.route('/produto/:idProduto').delete(checkToken ,produtosController.deletaProduto);
 
 module.exports = router;

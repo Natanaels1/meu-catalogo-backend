@@ -86,8 +86,17 @@ module.exports = {
                     idCategoria
                 } = produto;
 
-                produto.prontaEntrega = prontaEntrega ? 0 : 1;
-                produto.produtoDestaque = produtoDestaque ? 0 : 1;
+                if(produto.prontaEntrega) {
+                    produto.prontaEntrega = 0
+                } else {
+                    produto.prontaEntrega = 1
+                }
+
+                if(produto.produtoDestaque) {
+                    produto.produtoDestaque = 0
+                } else {
+                    produto.produtoDestaque = 1
+                }
                 
                 const imgsProduto = [];
 
@@ -100,14 +109,14 @@ module.exports = {
                 });
 
                 const idProduto = await ProdutosService.cadastraProduto(
-                    idEmpresa,
-                    nmProduto,
-                    vlProduto,
-                    prontaEntrega,
-                    descricao,
-                    produtosDisponiveis,
-                    produtoDestaque,
-                    idCategoria,
+                    produto.idEmpresa,
+                    produto.nmProduto,
+                    produto.vlProduto,
+                    produto.prontaEntrega,
+                    produto.descricao,
+                    produto.produtosDisponiveis,
+                    produto.produtoDestaque,
+                    produto.idCategoria,
                     JSON.stringify(imgsProduto)
                 );
                     
@@ -206,9 +215,9 @@ module.exports = {
     },
     deletaProduto: async (req, res) => {
         const json = { error: '', result: {} };
-        const { id } = req.params;
+        const { idProduto } = req.params;
 
-        const produto = await ProdutosService.deletaProduto(id);
+        const produto = await ProdutosService.deletaProduto(idProduto);
 
         if (produto) {
             json.result = produto;

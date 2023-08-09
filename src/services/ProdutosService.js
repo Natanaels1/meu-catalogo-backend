@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const fs = require('fs');
 
 module.exports = {
     buscarTodos: (idEmpresa) => {
@@ -21,7 +22,7 @@ module.exports = {
 
         return new Promise((resolve, reject) => {
             connection.query('SELECT * FROM produtos WHERE produtos.id = ?', [id] , (err, result) => {
-                
+
                 if(err) {
                     reject(err);
                     return;
@@ -117,14 +118,29 @@ module.exports = {
     },
     deletaProduto: (id) => {
         return new Promise((resolve, reject) => {
-            connection.query('DELETE FROM produtos WHERE produtos.id = ?', [Number(id)], (err, result) => {
+            connection.query('SELECT * FROM produtos WHERE idProduto = ?', [Number(id)], (err, result) => {
 
-                if(err) { 
+                if(!result) { 
                     reject(err);
                     return;
-                }
+                }     
 
-                resolve("Produto excluido.");
+                const imgs = JSON.parse(result[0].imgsProduto);
+
+                imgs.map( img => {
+                    fs.unlinkSync(img.src);
+                })
+
+                connection.query('DELETE FROM produtos WHERE idProduto = ?', [Number(id)], (err, res) => {
+
+                    if(err) { 
+                        reject(err);
+                        return;
+                    }
+    
+                    resolve('Produto excluido.');
+                });
+
             });
         });
     }
