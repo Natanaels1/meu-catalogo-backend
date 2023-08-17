@@ -61,7 +61,7 @@ model Produto {
     created_at              DateTime @default(now())
     updated_at              DateTime @updatedAt
 
-    Files File[] @relation("files")
+    Files File[]
 
     empresa Empresa? @relation(fields: [idEmpresa], references: [id])
 
@@ -75,9 +75,19 @@ model File {
     type       String
     idProduto  Int
     created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
-    
-    produto    Produto  @relation("files", fields: [idProduto], references: [id])
+
+    produto Produto @relation(fields: [idProduto], references: [id])
 
     @@map("files")
+}
+
+model Upload {
+    id         Int      @id @unique @default(autoincrement())
+    name       String
+    path       String
+    type       String
+    idProduto  Int
+    created_at DateTime @default(now())
+
+    @@map("uploads")
 }

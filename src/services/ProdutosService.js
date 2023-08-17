@@ -70,16 +70,16 @@ module.exports = {
 
                 for (const file of files) {
                     try {
-                        
-                        const { originalname, path, mimetype} = file;
 
-                        const fileUp = await prisma.file.create({
+                        const { originalname, path, mimetype } = file;
+
+                        const fileUp = await prisma.upload.create({
                             data: {
                                 name: originalname,
                                 path: path,
                                 type: mimetype,
                                 idProduto: newProduto.id
-                            },
+                            }
                         });
 
                         console.log(fileUp)
