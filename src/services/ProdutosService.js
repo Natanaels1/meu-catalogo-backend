@@ -9,38 +9,55 @@ module.exports = {
 
             const produtos = await prisma.produto.findMany({
                 where: {
-                    id: idEmpresa
+                    idEmpresa: idEmpresa,
                 },
-                orderBy: {
-
+                include: {
+                    Files: {
+                        select: {
+                            id: true,
+                            name: true,
+                            path: true,
+                            type: true
+                        }
+                    },
                 },
             })
 
-            return {
-                result: produtos
-            }
+            return produtos;
 
         } catch (erro) {
 
         }
     },
-    buscarProduto: (id) => {
+    buscarProduto: async (idEmpresa, id) => {
+        try {
 
-        return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM produtos WHERE produtos.id = ?', [id], (err, result) => {
+            const produto = await prisma.produto.findFirst({
+                where: {
+                    idEmpresa: idEmpresa,
+                    id: id
+                },
+                include: {
+                    Files: {
+                        select: {
+                            id: true,
+                            name: true,
+                            path: true,
+                            type: true
+                        }
+                    },
+                },
+            });
 
-                if (err) {
-                    reject(err);
-                    return;
-                }
+            if (!produto) {
+                return "Produto não encontrado."
+            }
 
-                if (result.length > 0) {
-                    resolve(result[0]);
-                }
+            return produto;
 
-            })
-        });
-
+        } catch (erro) {
+            console.log(erro);
+        }
     },
     cadastraProduto: async (produto, files) => {
         try {
@@ -73,7 +90,7 @@ module.exports = {
 
                         const { originalname, path, mimetype } = file;
 
-                        const fileUp = await prisma.upload.create({
+                        const fileUp = await prisma.file.create({
                             data: {
                                 name: originalname,
                                 path: path,
@@ -81,8 +98,6 @@ module.exports = {
                                 idProduto: newProduto.id
                             }
                         });
-
-                        console.log(fileUp)
 
                     } catch (error) {
                         console.error(`Erro ao inserir imagem no banco:`, error);

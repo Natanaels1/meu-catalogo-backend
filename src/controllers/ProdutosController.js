@@ -20,16 +20,16 @@ module.exports = {
     },
     buscarProduto: async (req, res) => {
 
-        const json = { error: '', result: {} };
-        const { id } = req.params;
+        const { idEmpresa, id } = req.params;
 
-        const produto = await ProdutosService.buscarProduto(id);
-
-        if (produto) {
-            json.result = produto;
+        if(!id) {
+            res.status(404).send("Informe o id do produto.");
+            return;
         }
 
-        res.send(json);
+        const produto = await ProdutosService.buscarProduto(idEmpresa, id);
+
+        res.json(produto);
 
     },
     cadastraProduto: async (req, res) => {

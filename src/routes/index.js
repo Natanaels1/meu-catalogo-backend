@@ -17,8 +17,8 @@ router.route('/auth/register').post(AdminController.register);
 router.route('/empresas/register').post(EmpresaController.register);
 // router.route('/empresas/dadosEmpresa/:idEmpresa').get(checkToken, AdminController.dadosEmpresa);
 
-router.route('/produtosCadastrados/:idEmpresa').get(checkTokenAdmin, produtosController.buscarTodos);
-// router.route('/produto/:id').get(produtosController.buscarProduto);
+router.route('/produtosCadastrados/:idEmpresa').get(produtosController.buscarTodos);
+router.route('/produto/:idEmpresa/:id').get(produtosController.buscarProduto);
 // router.route('/categorias/:idEmpresa').get(checkToken, EmpresaController.buscarCategorias);
 
 router.route('/produto').post(checkTokenAdmin, upload.array("files"), produtosController.cadastraProduto);

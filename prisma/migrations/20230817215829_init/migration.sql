@@ -45,9 +45,13 @@ CREATE TABLE `produtos` (
     `idCategoria` INTEGER NOT NULL,
     `vlProduto` DOUBLE NOT NULL,
     `description` VARCHAR(191) NOT NULL,
+    `qntdProdutosDisponiveis` INTEGER NOT NULL,
+    `flProntaEntrega` BOOLEAN NOT NULL DEFAULT false,
     `flAtivo` BOOLEAN NOT NULL DEFAULT true,
     `idEmpresa` INTEGER NOT NULL,
     `flProdutoDestaque` BOOLEAN NOT NULL DEFAULT false,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `produtos_id_key`(`id`),
     PRIMARY KEY (`id`)
@@ -58,8 +62,9 @@ CREATE TABLE `files` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
     `path` VARCHAR(191) NOT NULL,
-    `url` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
     `idProduto` INTEGER NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `files_id_key`(`id`),
     PRIMARY KEY (`id`)

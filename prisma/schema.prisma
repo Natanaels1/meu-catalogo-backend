@@ -80,14 +80,3 @@ model File {
 
     @@map("files")
 }
-
-model Upload {
-    id         Int      @id @unique @default(autoincrement())
-    name       String
-    path       String
-    type       String
-    idProduto  Int
-    created_at DateTime @default(now())
-
-    @@map("uploads")
-}
