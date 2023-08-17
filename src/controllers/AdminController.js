@@ -62,7 +62,8 @@ module.exports = {
                         mensagem: "Autenticado com sucesso.",
                         dadosAdmin: {
                             idAdmin: result.id,
-                            name: result.name
+                            name: result.name,
+                            empresa: result['empresa']
                         },
                         token: token,
                     });
@@ -88,6 +89,7 @@ module.exports = {
                     name: Joi.string().required(),
                     email: Joi.string().required(),
                     password: Joi.string().required(),
+                    emailEmpresa: Joi.string().required(),
                 });
         
                 const { error } = schema.validate(objeto);
@@ -108,6 +110,7 @@ module.exports = {
                     name,
                     email,
                     password,
+                    emailEmpresa
                 } = dadosUsuarioAdmin;
     
                 const salt = await bcrypt.genSalt(12);
@@ -117,6 +120,7 @@ module.exports = {
                     name, 
                     email, 
                     passwordHash, 
+                    emailEmpresa
                 );
     
                 if(response.erro) {
@@ -124,7 +128,7 @@ module.exports = {
                     return;
                 }
     
-                res.status(200).send(response.result);
+                res.status(200).send(response.mensagem);
     
             }
 

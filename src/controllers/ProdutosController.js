@@ -4,7 +4,6 @@ const Joi = require('joi');
 module.exports = {
     buscarTodos: async (req, res) => {
 
-        const json = { error: '', result: [] };
         const { idEmpresa } = req.params;
 
         if (!idEmpresa) {
@@ -14,17 +13,9 @@ module.exports = {
 
         const produtos = await ProdutosService.buscarTodos(idEmpresa);
 
-        for (let i in produtos) {
+        console.log('aqui:', produtos);
 
-            produtos[i].prontaEntrega = produtos[i].prontaEntrega === 0 ? true : false;
-            produtos[i].produtoDestaque = produtos[i].produtoDestaque === 0 ? true : false;
-            produtos[i].produtoAtivo = produtos[i].produtoAtivo === 0 ? true : false;
-            produtos[i].imgsProduto = JSON.parse(produtos[i].imgsProduto);
-
-            json.result.push(produtos[i]);
-        }
-
-        res.send(json);
+        // res.send(json);
 
     },
     buscarProduto: async (req, res) => {
@@ -44,8 +35,6 @@ module.exports = {
     cadastraProduto: async (req, res) => {
         try {
 
-            const json = { error: '', result: {} };
-
             const produto = JSON.parse(req.body.body);
             const files = req.files;
 
@@ -56,9 +45,9 @@ module.exports = {
                     nmProduto: Joi.string().required(),
                     vlProduto: Joi.number().positive().required(),
                     descricao: Joi.string().required(),
-                    prontaEntrega: Joi.boolean().required(),
-                    produtosDisponiveis: Joi.number().integer().min(0).required(),
-                    produtoDestaque: Joi.boolean().required(),
+                    flProntaEntrega: Joi.boolean().required(),
+                    qntdProdutosDisponiveis: Joi.number().integer().min(0).required(),
+                    flProdutoDestaque: Joi.boolean().required(),
                     idCategoria: Joi.number().required(),
                 });
 
@@ -75,58 +64,13 @@ module.exports = {
 
             if (validarFormulario(produto)) {
 
-                const {
-                    idEmpresa,
-                    nmProduto,
-                    vlProduto,
-                    prontaEntrega,
-                    descricao,
-                    produtosDisponiveis,
-                    produtoDestaque,
-                    idCategoria
-                } = produto;
+                const newProduto = await ProdutosService.cadastraProduto(produto, files);
 
-                if(produto.prontaEntrega) {
-                    produto.prontaEntrega = 0
-                } else {
-                    produto.prontaEntrega = 1
-                }
-
-                if(produto.produtoDestaque) {
-                    produto.produtoDestaque = 0
-                } else {
-                    produto.produtoDestaque = 1
-                }
-                
-                const imgsProduto = [];
-
-                files.map( (img, index) => {
-                    imgsProduto.push({
-                        id: index,
-                        name: img.originalname,
-                        src: img.path, 
-                    });
-                });
-
-                const idProduto = await ProdutosService.cadastraProduto(
-                    produto.idEmpresa,
-                    produto.nmProduto,
-                    produto.vlProduto,
-                    produto.prontaEntrega,
-                    produto.descricao,
-                    produto.produtosDisponiveis,
-                    produto.produtoDestaque,
-                    produto.idCategoria,
-                    JSON.stringify(imgsProduto)
-                );
-                    
-                json.result = idProduto;
+                res.json(newProduto);
 
             } else {
-                json.error = 'Algum dado invalido';
+                res.status(404).send('Algum dado invalido');
             }
-
-            res.send(json);
 
         } catch (erro) {
             console.log(erro);
@@ -166,25 +110,25 @@ module.exports = {
 
             if (validarFormulario(produto)) {
 
-                if(produto.prontaEntrega) {
+                if (produto.prontaEntrega) {
                     produto.prontaEntrega = 0
                 } else {
                     produto.prontaEntrega = 1
                 }
 
-                if(produto.produtoDestaque) {
+                if (produto.produtoDestaque) {
                     produto.produtoDestaque = 0
                 } else {
                     produto.produtoDestaque = 1
                 }
-                
+
                 const imgsProduto = [];
 
-                files.map( (img, index) => {
+                files.map((img, index) => {
                     imgsProduto.push({
                         id: index,
                         name: img.originalname,
-                        src: img.path, 
+                        src: img.path,
                     });
                 });
 
@@ -199,7 +143,7 @@ module.exports = {
                     produto.idCategoria,
                     JSON.stringify(imgsProduto)
                 );
-                    
+
                 json.result = idProduto;
 
             } else {

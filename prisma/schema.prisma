@@ -14,9 +14,10 @@ model Empresa {
     cnpj_cpf   String
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
-    // Admins Admin[]
-    // Categorias Categoria[]
-    // Produtos Produto[]
+
+    Admins     Admin[]
+    Categorias Categoria[]
+    Produtos   Produto[]
 
     @@map("empresas")
 }
@@ -28,9 +29,9 @@ model Admin {
     password   String
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
-    // idEmpresa  Int
+    idEmpresa  Int
 
-    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+    empresa Empresa? @relation(fields: [idEmpresa], references: [id])
 
     @@map("admins")
 }
@@ -41,35 +42,42 @@ model Categoria {
     created_at DateTime @default(now())
     idEmpresa  Int
 
-    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+    empresa Empresa? @relation(fields: [idEmpresa], references: [id])
 
     @@map("categorias")
 }
 
 model Produto {
-    id                Int     @id @unique @default(autoincrement())
-    name              String
-    idCategoria       Int
-    vlProduto         Float
-    description       String
-    flAtivo           Boolean @default(true)
-    idEmpresa         Int
-    flProdutoDestaque Boolean @default(false)
+    id                      Int      @id @unique @default(autoincrement())
+    name                    String
+    idCategoria             Int
+    vlProduto               Float
+    description             String
+    qntdProdutosDisponiveis Int
+    flProntaEntrega         Boolean  @default(false)
+    flAtivo                 Boolean  @default(true)
+    idEmpresa               Int
+    flProdutoDestaque       Boolean  @default(false)
+    created_at              DateTime @default(now())
+    updated_at              DateTime @updatedAt
 
-    Files File[]
+    Files File[] @relation("files")
 
-    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+    empresa Empresa? @relation(fields: [idEmpresa], references: [id])
 
     @@map("produtos")
 }
 
 model File {
-    id        Int     @id @unique @default(autoincrement())
-    name      String
-    path      String
-    url       String
-    idProduto Int
-    produto   Produto @relation(fields: [idProduto], references: [id])
+    id         Int      @id @unique @default(autoincrement())
+    name       String
+    path       String
+    type       String
+    idProduto  Int
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    
+    produto    Produto  @relation("files", fields: [idProduto], references: [id])
 
     @@map("files")
 }

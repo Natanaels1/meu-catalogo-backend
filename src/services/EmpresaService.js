@@ -5,25 +5,27 @@ module.exports = {
     register: async (name, email, cnpj_cpf) => {
         try {
 
-            const emailHasCreated = await prisma.empresas.findUnique({
-                where: { email }
-            })
-            console.log('console:', emailHasCreated)
+            const emailHasCreated = await prisma.empresa.findFirst({
+                where: {
+                    email: email
+                }
+            });
 
             if (emailHasCreated) {
                 return {erro: "Empresa já possui cadastro."};
+            }; 
+
+            const newEmpresa = await prisma.empresa.create({ 
+                data: {
+                    name,
+                    email,
+                    cnpj_cpf
+                }
+            })
+
+            return {
+                mensagem: "Empresa cadastrada com sucesso",
             };
-
-
-            // const newEmpresa = await prisma.empresa.create({
-            //     data: {
-            //         name,
-            //         email,
-            //         cnpj_cpf
-            //     },
-            // })
-
-            // return newEmpresa;
 
         } catch (err) {
             console.log(err);

@@ -7,16 +7,38 @@ module.exports = {
 
             const emailHasCreated = await prisma.admin.findUnique({
                 where: { email }
-            })
+            });
 
+            if(!emailHasCreated) {
+                return null;
+            }
+
+            const empresa = await prisma.empresa.findUnique({
+                where: { id: emailHasCreated.idEmpresa }
+            });
+
+            emailHasCreated.empresa = {
+                name: empresa.name,
+                cnpj_cpf: empresa.cnpj_cpf,
+                email: empresa.email
+            };
+            
             return emailHasCreated;
 
         } catch (err) {
             console.log(err);
         }
     },
-    register: async (name, email, password) => {
+    register: async (name, email, password, emailEmpresa) => {
         try {
+
+            const empresa = await prisma.empresa.findFirst({
+                where: { email: emailEmpresa },
+            });
+
+            if(!empresa) {
+                return {erro: "Empresa não encontrada, ou e-mail da empresa incorreto."};
+            }
 
             const emailHasCreated = await prisma.admin.findUnique({
                 where: { email }
@@ -30,11 +52,14 @@ module.exports = {
                 data: {
                     name,
                     email,
-                    password
+                    password,
+                    idEmpresa: empresa.id
                 },
             })
 
-            return {result: [newAdmin]};
+            return {
+                mensagem: "Admin da empresa " + empresa.name + " cadastrado com sucesso."
+            };
 
         } catch (err) {
             return String(err);
