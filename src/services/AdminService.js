@@ -1,43 +1,49 @@
-const connection = require('../connection');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 module.exports = {
-    login: (email, password) => {
-        return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM admins WHERE email = ?', [email], (err, result) => {
-                
-                if(err) {
-                    reject(err);
-                    return;
-                }
+    login: async (email, password) => {
+        try {
 
-                resolve(result);
+            const emailHasCreated = await prisma.admin.findUnique({
+                where: { email }
+            })
 
-            });
-        });
+            return emailHasCreated;
+
+        } catch (err) {
+            console.log(err);
+        }
     },
-    register: (name, email, password, nameEmpresa, CNPJ) => {
-        return new Promise((resolve, reject) => {
+    register: async (name, email, password) => {
+        try {
 
-            connection.query('INSERT INTO admins (name, email, password, nameEmpresa, CNPJ) VALUES (?, ?, ?, ?, ?)', 
-                [name, email, password, nameEmpresa, CNPJ], (err, result) => {
-                
-                if(err) {
-                    reject(err);
-                    return;
-                }
-                
-                resolve({
-                    message: 'Admin cadastrado com sucesso.'
-                });
-
+            const emailHasCreated = await prisma.admin.findUnique({
+                where: { email }
             });
 
-        });
+            if (emailHasCreated) {
+                return {erro: "E-mail já cadastrado, tente outro."};
+            };
+
+            const newAdmin = await prisma.admin.create({
+                data: {
+                    name,
+                    email,
+                    password
+                },
+            })
+
+            return {result: [newAdmin]};
+
+        } catch (err) {
+            return String(err);
+        }
     },
     dadosAdmin: (idAdmin) => {
         return new Promise((resolve, reject) => {
             connection.query('SELECT * FROM admins WHERE admins.idAdmin = ?', [idAdmin], (err, result) => {
-                if(err) {
+                if (err) {
                     reject(err);
                     return;
                 }
@@ -52,7 +58,7 @@ module.exports = {
     dadosEmpresa: (idEmpresa) => {
         return new Promise((resolve, reject) => {
             connection.query('SELECT * FROM empresas WHERE idEmpresa = ?', [idEmpresa], (err, result) => {
-                if(err) {
+                if (err) {
                     reject(err);
                     return;
                 }

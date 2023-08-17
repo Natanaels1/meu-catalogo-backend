@@ -1,4 +1,4 @@
-const connection = require('../connection');
+const prisma = require('@prisma/client');
 const fs = require('fs');
 
 module.exports = {
@@ -80,25 +80,40 @@ module.exports = {
     editaProduto: (
         idProdutoEditado,
         nmProduto, 
-        categoria, 
         vlProduto, 
         prontaEntrega, 
         descricao, 
         produtosDisponiveis, 
         produtoDestaque, 
-        idCategoria
+        idCategoria,
+        imgsProduto
     ) => {
         return new Promise((resolve, reject) => {
-            connection.query(`UPDATE produtos SET   
-                    nmProduto = '${nmProduto}', 
-                    categoria = '${categoria}', 
+            connection.query('SELECT * FROM produtos WHERE idProduto = ?', [Number(idProdutoEditado)], (err, result) => {
+
+                if(!result) { 
+                    reject(err);
+                    return;
+                }     
+
+                const imgs = JSON.parse(result[0].imgsProduto);
+
+                if(imgsProduto) {
+                    imgs.map( img => {
+                        fs.unlinkSync(img.src);
+                    });
+                }
+
+                connection.query(`UPDATE produtos SET   
+                    nmProduto = '${nmProduto}',  
                     vlProduto = ${vlProduto}, 
                     prontaEntrega = ${prontaEntrega}, 
                     descricao = '${descricao}', 
                     produtosDisponiveis = ${produtosDisponiveis}, 
                     produtoDestaque = ${produtoDestaque}, 
-                    idCategoria = ${idCategoria}
-                    WHERE produtos.id = ?
+                    idCategoria = ${idCategoria},
+                    imgsProduto = '${imgsProduto ? imgsProduto : JSON.stringify(imgs)}'
+                    WHERE idProduto = ?
                 `,
                 [idProdutoEditado]
                 , (err, result) => {
@@ -113,7 +128,8 @@ module.exports = {
                     });
                 
                 }
-            )
+                );
+            })
         })
     },
     deletaProduto: (id) => {

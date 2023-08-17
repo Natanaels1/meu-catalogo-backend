@@ -1,0 +1,75 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Empresa {
+    id         Int      @id @unique @default(autoincrement())
+    name       String
+    email      String   @unique
+    cnpj_cpf   String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    // Admins Admin[]
+    // Categorias Categoria[]
+    // Produtos Produto[]
+
+    @@map("empresas")
+}
+
+model Admin {
+    id         Int      @id @unique @default(autoincrement())
+    name       String
+    email      String   @unique
+    password   String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    // idEmpresa  Int
+
+    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+
+    @@map("admins")
+}
+
+model Categoria {
+    id         Int      @id @unique @default(autoincrement())
+    name       String
+    created_at DateTime @default(now())
+    idEmpresa  Int
+
+    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+
+    @@map("categorias")
+}
+
+model Produto {
+    id                Int     @id @unique @default(autoincrement())
+    name              String
+    idCategoria       Int
+    vlProduto         Float
+    description       String
+    flAtivo           Boolean @default(true)
+    idEmpresa         Int
+    flProdutoDestaque Boolean @default(false)
+
+    Files File[]
+
+    // empresa  Empresa @relation(fields: [idEmpresa], references: [id]) 
+
+    @@map("produtos")
+}
+
+model File {
+    id        Int     @id @unique @default(autoincrement())
+    name      String
+    path      String
+    url       String
+    idProduto Int
+    produto   Produto @relation(fields: [idProduto], references: [id])
+
+    @@map("files")
+}

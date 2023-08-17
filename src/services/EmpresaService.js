@@ -1,18 +1,32 @@
-const connection = require('../connection');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 module.exports = {
-    buscarCategorias: (idEmpresa) => {
-        return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM categorias WHERE idEmpresa = ?', [idEmpresa], (err, result) => {
-                
-                if(err) {
-                    reject(err);
-                    return;
-                }
+    register: async (name, email, cnpj_cpf) => {
+        try {
 
-                resolve(result);
+            const emailHasCreated = await prisma.empresas.findUnique({
+                where: { email }
+            })
+            console.log('console:', emailHasCreated)
 
-            });
-        });
+            if (emailHasCreated) {
+                return {erro: "Empresa já possui cadastro."};
+            };
+
+
+            // const newEmpresa = await prisma.empresa.create({
+            //     data: {
+            //         name,
+            //         email,
+            //         cnpj_cpf
+            //     },
+            // })
+
+            // return newEmpresa;
+
+        } catch (err) {
+            console.log(err);
+        }
     }
 };

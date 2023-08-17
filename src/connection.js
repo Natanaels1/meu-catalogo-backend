@@ -1,6 +1,6 @@
-require('dotenv').config();
-const mysql = require('mysql2');
+// require('dotenv').config();
+// const mysql = require('mysql2');
 
-const connection = mysql.createConnection(process.env.DATABASE_URL);
+// const connection = mysql.createConnection(process.env.DATABASE_URL);
 
-module.exports = connection;
+// module.exports = connection;
