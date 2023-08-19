@@ -4,12 +4,19 @@ const prisma = new PrismaClient();
 const fs = require('fs');
 
 module.exports = {
-    buscarTodos: async (idEmpresa) => {
+    buscarTodos: async (idEmpresa, produtosDestaque, pageTotal, page) => {
         try {
-
+            console.log(produtosDestaque)
             const produtos = await prisma.produto.findMany({
                 where: {
-                    idEmpresa: idEmpresa,
+                    idEmpresa: {
+                        equals: Number(idEmpresa)
+                    },
+                    AND: [
+                        {
+                            flProdutoDestaque: Boolean(produtosDestaque)
+                        }
+                    ]
                 },
                 include: {
                     Files: {
@@ -21,21 +28,29 @@ module.exports = {
                         }
                     },
                 },
-            })
+                take: Number(pageTotal),
+                skip: Number(page),
+            });
+
+            if(!produtos) {
+                return "Nenhum produto encontrado.";
+            };
 
             return produtos;
 
         } catch (erro) {
-
+            console.log(erro);
         }
     },
-    buscarProduto: async (idEmpresa, id) => {
+    buscarProduto: async (idEmpresa, idProduto) => {
         try {
 
             const produto = await prisma.produto.findFirst({
                 where: {
-                    idEmpresa: idEmpresa,
-                    id: id
+                    idEmpresa: {
+                        equals: Number(idEmpresa)
+                    },
+                    id: Number(idProduto)
                 },
                 include: {
                     Files: {
@@ -50,8 +65,8 @@ module.exports = {
             });
 
             if (!produto) {
-                return "Produto não encontrado."
-            }
+                return "Produto não encontrado.";
+            };
 
             return produto;
 
@@ -90,7 +105,7 @@ module.exports = {
 
                         const { originalname, path, mimetype } = file;
 
-                        const fileUp = await prisma.file.create({
+                        await prisma.file.create({
                             data: {
                                 name: originalname,
                                 path: path,
@@ -115,60 +130,97 @@ module.exports = {
             console.log(erro);
         }
     },
-    editaProduto: (
-        idProdutoEditado,
-        nmProduto,
-        vlProduto,
-        prontaEntrega,
-        descricao,
-        produtosDisponiveis,
-        produtoDestaque,
-        idCategoria,
-        imgsProduto
-    ) => {
-        return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM produtos WHERE idProduto = ?', [Number(idProdutoEditado)], (err, result) => {
+    editaProduto: async (produto, files) => {
+        try {
 
-                if (!result) {
-                    reject(err);
-                    return;
-                }
-
-                const imgs = JSON.parse(result[0].imgsProduto);
-
-                if (imgsProduto) {
-                    imgs.map(img => {
-                        fs.unlinkSync(img.src);
-                    });
-                }
-
-                connection.query(`UPDATE produtos SET   
-                    nmProduto = '${nmProduto}',  
-                    vlProduto = ${vlProduto}, 
-                    prontaEntrega = ${prontaEntrega}, 
-                    descricao = '${descricao}', 
-                    produtosDisponiveis = ${produtosDisponiveis}, 
-                    produtoDestaque = ${produtoDestaque}, 
-                    idCategoria = ${idCategoria},
-                    imgsProduto = '${imgsProduto ? imgsProduto : JSON.stringify(imgs)}'
-                    WHERE idProduto = ?
-                `,
-                    [idProdutoEditado]
-                    , (err, result) => {
-
-                        if (err) {
-                            reject(err);
-                            return;
+            const existsAlready = await prisma.produto.findFirst({
+                where: { 
+                    id: Number(produto.idProdutoEditado),
+                },
+                include: {
+                    Files: {
+                        select: {
+                            id: true,
+                            name: true,
+                            path: true,
+                            type: true
                         }
+                    },
+                }
+            });
 
-                        resolve({
-                            message: 'Edição realizada com sucesso.'
+            if (!existsAlready) {
+                return "Produto não encontrado";
+            };
+
+            const updateProduto = await prisma.produto.update({
+                where: {
+                    id: Number(produto.idProdutoEditado)
+                },
+                data: {
+                    name: produto.nmProduto,
+                    vlProduto: produto.vlProduto,
+                    description: produto.descricao,
+                    qntdProdutosDisponiveis: produto.qntdProdutosDisponiveis,
+                    flProntaEntrega: produto.flProntaEntrega,
+                    flProdutoDestaque: produto.flProdutoDestaque,
+                    idEmpresa: produto.idEmpresa,
+                    idCategoria: produto.idCategoria
+                }
+            });
+
+            const ids = produto.idsFilesDeleted;
+
+            if(ids.length > 0) {
+
+                const filesExist = existsAlready.Files;
+
+                for (const id of ids) {
+
+                    await prisma.file.delete({
+                        where: {
+                            id: Number(id),
+                        }
+                    });
+
+                    filesExist.map( file => {
+                        if(id === file.id) {
+                            fs.unlinkSync(file.path);
+                        }
+                    });
+
+                }
+
+            }
+        
+            if (updateProduto) {
+
+                for (const file of files) {
+                    try {
+
+                        const { originalname, path, mimetype } = file;
+
+                        await prisma.file.create({
+                            data: {
+                                name: originalname,
+                                path: path,
+                                type: mimetype,
+                                idProduto: produto.idProdutoEditado
+                            }
                         });
 
+                    } catch (error) {
+                        console.error(`Erro ao inserir imagem no banco:`, error);
                     }
-                );
-            })
-        })
+                }
+
+            };
+
+            return "Produto atualizado com sucesso.";
+
+        } catch (erro) {
+            console.log(erro);
+        }
     },
     deletaProduto: (id) => {
         return new Promise((resolve, reject) => {

@@ -9,20 +9,17 @@ const EmpresaController = require('../controllers/EmpresaController');
 //Middlewares
 const checkTokenAdmin = require('../middlewares/checkTokenAdmin');
 
-//Rotas
-router.route('/auth/loginAdmin').post(AdminController.login);
+//Admin
 router.route('/auth/register').post(AdminController.register);
-// router.route('/auth/dadosAdmin/:idAdmin').get(checkToken, AdminController.dadosAdmin);
+router.route('/auth/loginAdmin').post(AdminController.login);
 
+//Empresa
 router.route('/empresas/register').post(EmpresaController.register);
-// router.route('/empresas/dadosEmpresa/:idEmpresa').get(checkToken, AdminController.dadosEmpresa);
-
-router.route('/produtosCadastrados/:idEmpresa').get(produtosController.buscarTodos);
-router.route('/produto/:idEmpresa/:id').get(produtosController.buscarProduto);
-// router.route('/categorias/:idEmpresa').get(checkToken, EmpresaController.buscarCategorias);
-
 router.route('/produto').post(checkTokenAdmin, upload.array("files"), produtosController.cadastraProduto);
-// router.route('/produto').put(checkToken , upload.array("files"), produtosController.editaProduto);
-// router.route('/produto/:idProduto').delete(checkToken ,produtosController.deletaProduto);
+router.route('/produto').put(checkTokenAdmin, upload.array("files"), produtosController.editaProduto);
+
+//Get Produtos
+router.route('/produtosCadastrados/:pageTotal/:page').get(produtosController.buscarTodos);
+router.route('/produto/:nmEmpresa').get(produtosController.buscarProduto);
 
 module.exports = router;

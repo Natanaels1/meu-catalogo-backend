@@ -4,30 +4,48 @@ const Joi = require('joi');
 module.exports = {
     buscarTodos: async (req, res) => {
 
-        const { idEmpresa } = req.params;
+        const {
+            pageTotal,
+            page
+        } = req.params;
+
+        const querys = req.query;
+
+        const idEmpresa = querys['100'];
+        const produtosDestaque = querys['102'];
 
         if (!idEmpresa) {
             res.status(401).json({ erro: 'Informe o id da empresa' });
             return;
         }
 
-        const produtos = await ProdutosService.buscarTodos(idEmpresa);
+        const produtos = await ProdutosService.buscarTodos(idEmpresa, produtosDestaque, pageTotal, page);
 
-        console.log('aqui:', produtos);
+        if(!produtos) {
+            res.status(404).send("Nenhum produto encontrado");
+        }
 
-        // res.send(json);
+        res.json(produtos);
 
     },
     buscarProduto: async (req, res) => {
 
-        const { idEmpresa, id } = req.params;
+        const querys = req.query;
 
-        if(!id) {
+        const idEmpresa = querys['100'];
+        const idProduto = querys['101'];
+
+        if(!idEmpresa) {
+            res.status(404).send("Informe o id da Empresa.");
+            return;
+        }
+
+        if(!idProduto) {
             res.status(404).send("Informe o id do produto.");
             return;
         }
 
-        const produto = await ProdutosService.buscarProduto(idEmpresa, id);
+        const produto = await ProdutosService.buscarProduto(idEmpresa, idProduto);
 
         res.json(produto);
 
@@ -79,8 +97,6 @@ module.exports = {
     editaProduto: async (req, res) => {
         try {
 
-            const json = { error: '', result: {} };
-
             const produto = JSON.parse(req.body.body);
             const files = req.files;
 
@@ -91,10 +107,11 @@ module.exports = {
                     nmProduto: Joi.string().required(),
                     vlProduto: Joi.number().positive().required(),
                     descricao: Joi.string().required(),
-                    prontaEntrega: Joi.boolean().required(),
-                    produtosDisponiveis: Joi.number().integer().min(0).required(),
-                    produtoDestaque: Joi.boolean().required(),
+                    flProntaEntrega: Joi.boolean().required(),
+                    qntdProdutosDisponiveis: Joi.number().integer().min(0).required(),
+                    flProdutoDestaque: Joi.boolean().required(),
                     idCategoria: Joi.number().required(),
+                    idsFilesDeleted: Joi.array()
                 });
 
                 const { error } = schema.validate(objeto);
@@ -110,47 +127,13 @@ module.exports = {
 
             if (validarFormulario(produto)) {
 
-                if (produto.prontaEntrega) {
-                    produto.prontaEntrega = 0
-                } else {
-                    produto.prontaEntrega = 1
-                }
+                const produtoEditado = await ProdutosService.editaProduto(produto, files);
 
-                if (produto.produtoDestaque) {
-                    produto.produtoDestaque = 0
-                } else {
-                    produto.produtoDestaque = 1
-                }
-
-                const imgsProduto = [];
-
-                files.map((img, index) => {
-                    imgsProduto.push({
-                        id: index,
-                        name: img.originalname,
-                        src: img.path,
-                    });
-                });
-
-                const idProduto = await ProdutosService.editaProduto(
-                    produto.idProdutoEditado,
-                    produto.nmProduto,
-                    produto.vlProduto,
-                    produto.prontaEntrega,
-                    produto.descricao,
-                    produto.produtosDisponiveis,
-                    produto.produtoDestaque,
-                    produto.idCategoria,
-                    JSON.stringify(imgsProduto)
-                );
-
-                json.result = idProduto;
+                res.json(produtoEditado);
 
             } else {
-                json.error = 'Algum dado invalido';
+                res.status(404).send('Algum dado invalido');
             }
-
-            res.send(json);
 
         } catch (erro) {
             console.log(erro);
