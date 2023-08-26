@@ -151,4 +151,16 @@ module.exports = {
 
         res.send(json);
     },
+    getProdutosDestaque:  async (req, res) => {
+
+        const {idEmpresa} = req.params;
+
+        if(!idEmpresa) {
+            res.status(404).send("Id empresa não informado.");
+            return;
+        }
+
+        res.send("Funciona");
+
+    }
 }

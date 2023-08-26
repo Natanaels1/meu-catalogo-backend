@@ -9,7 +9,7 @@ datasource db {
 
 model Empresa {
     id         Int      @id @unique @default(autoincrement())
-    name       String
+    name       String   @unique
     email      String   @unique
     cnpj_cpf   String
     created_at DateTime @default(now())

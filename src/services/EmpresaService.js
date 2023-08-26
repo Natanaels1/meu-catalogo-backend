@@ -30,5 +30,31 @@ module.exports = {
         } catch (err) {
             console.log(err);
         }
+    },
+    getDadosEmpresa: async (nmEmpresa) => {
+        try {
+
+            const empresa = await prisma.empresa.findFirst({
+                where: {
+                    name: {
+                        equals: String(nmEmpresa)
+                    }
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                }
+            });
+
+            if(!empresa) {
+                return "Empresa não encontrada.";
+            };
+
+            return empresa;
+
+        } catch (erro) {
+            return "Erro no banco:" + erro;
+        }
     }
 };

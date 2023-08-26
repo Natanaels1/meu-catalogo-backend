@@ -68,4 +68,26 @@ module.exports = {
         */
 
     },
+    getDadosEmpresa: async (req, res) => {
+
+        const { nmEmpresa } = req.params;
+
+        if(!nmEmpresa) {
+            res.status(404).send("Informe o nome da empresa");
+            return;
+        };
+
+        function formatarNomeEmpresa(s) {
+            return s.replace(/([a-z])([A-Z])/g, '$1 $2');
+        }
+
+        const empresa = await EmpresaService.getDadosEmpresa(formatarNomeEmpresa(nmEmpresa));
+
+        if(!empresa) {
+            res.status(404).send(empresa);
+            return;
+        };
+
+        res.json(empresa);
+    }
 };
